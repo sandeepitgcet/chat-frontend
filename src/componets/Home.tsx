@@ -2,7 +2,9 @@
 
 import React, { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useLocalStorage from "../hooks/useLocalStorage";
+import useLocalStorage from "../hooks/localStorage";
+import { useAppDispatch } from "../hooks/reduxHook";
+import { setUserInfo } from "../redux/userReducer";
 interface LoginInfoInterface {
   email?: string;
   userName?: string;
@@ -20,6 +22,7 @@ const Home: React.FC = () => {
     {}
   );
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const loginHandler = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -36,6 +39,7 @@ const Home: React.FC = () => {
     if (response.status) {
       console.log("succeess loginData", loginData);
       setLoginInfo(loginData.data.userInfo);
+      dispatch(setUserInfo(loginData.data.userInfo));
       //navigate("/dashboard");
     } else {
       console.log(loginData, "loginFailed");

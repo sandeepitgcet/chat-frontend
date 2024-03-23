@@ -1,65 +1,76 @@
 import { useState } from "react";
-import { Socket } from "socket.io-client";
-import useLocalStorage from "../hooks/useLocalStorage";
+import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
+import { ChatMessage, ChatProps } from "../util/types";
+import { addMessage } from "../redux/chatReducer";
+import { v4 as uuidv4 } from "uuid";
 
-interface Chat {
-  userName: string;
-  message: string;
-  time: string;
-}
-
-interface ChatProps {
-  socket: Socket;
-}
-interface LoginInfoInterface {
-  email?: string;
-  userName: string;
-  accessToken?: string;
-  refreshToken?: string;
-}
 const Chat: React.FC<ChatProps> = ({ socket }) => {
-  const [chatData, setChatData] = useState<Chat[]>([]);
+  const toUserName = useAppSelector((state) => state.chat.currentChatUser);
+  const chatMessages = useAppSelector((state) => state.chat.userChatMessages);
   const [messageData, setMessageData] = useState("");
-  const [userInfo] = useLocalStorage<LoginInfoInterface>("userInfo", {
-    userName: "User",
-  });
+  const userInfo = useAppSelector((state) => state.user.userInfo);
+  const dispatch = useAppDispatch();
+  console.log(chatMessages);
+  if (!toUserName) {
+    return (
+      <div>
+        <h1>Select a user to chat with</h1>
+      </div>
+    );
+  }
 
-  socket.on("receiveMessage", ({ message, userName, time }) => {
-    console.log("Received message");
-    setChatData([...chatData, { userName, message, time }]);
+  socket.on("receiveMessage", ({ message }) => {
+    console.log("Received message", message);
+    // const message: ChatMessage = {
+    //   id: uuidv4(),
+    //   senderUserName: userInfo.userName,
+    //   toUserName: toUserName,
+    //   messageType: "text",
+    //   message: messageData,
+    //   timestamp: Date.now(), // Unix timestamp of when the message was sent
+    // };
+    dispatch(addMessage({ userName: toUserName, message }));
   });
 
   const sendMessage = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    setMessageData("");
-    setChatData((prevState) => [
-      ...prevState,
-      {
-        userName: userInfo.userName,
-        message: messageData,
-        time: new Date().toLocaleString(),
-      },
-    ]);
-    socket.emit("sendMessage", {
-      userName: userInfo.userName,
+    const message: ChatMessage = {
+      id: uuidv4(),
+      senderUserName: userInfo.userName,
+      toUserName: toUserName,
+      messageType: "text",
       message: messageData,
-      time: new Date().toLocaleString(),
+      timestamp: Date.now(),
+    };
+    dispatch(addMessage({ userName: toUserName, message }));
+    socket.emit("sendMessage", {
+      userName: toUserName,
+      message,
     });
+    setMessageData("");
   };
 
   return (
     <div className="min-w-80 h-full overflow-y-auto flex flex-col">
-      <div className="bg-green-400">Chat Info</div>
+      <div className="bg-green-400">
+        <div className="flex justify-between items-center p-4">
+          <div className="flex items-center">
+            <span className="text-white text-lg font-semibold">
+              {toUserName}
+            </span>
+          </div>
+        </div>
+      </div>
       <div className="bg-green-600 flex-1 overflow-y-auto">
         <div className="p-4">
-          {chatData.map((data: Chat, index: number) => (
-            <div key={index}>
+          {chatMessages[toUserName]?.map((chat: ChatMessage) => (
+            <div key={chat.id}>
               <div className="flex justify-between items-center">
                 <div className="flex-1">
-                  <div className="text-gray-100 text-sm">{data.userName}</div>
-                  <div className="text-gray-100 text-sm">{data.message}</div>
+                  <div className="text-gray-100 text-sm">{chat.toUserName}</div>
+                  <div className="text-gray-100 text-sm">{chat.message}</div>
                 </div>
-                <div className="text-gray-100 text-sm">{data.time}</div>
+                <div className="text-gray-100 text-sm">{chat.timestamp}</div>
               </div>
             </div>
           ))}

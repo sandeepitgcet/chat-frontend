@@ -1,25 +1,13 @@
-import { useEffect, useState } from "react";
-import useLocalStorage from "../hooks/useLocalStorage";
-
-interface UserListInterface {
-  userName: string;
-  email: string;
-}
-
-interface LoginInfoInterface {
-  email?: string;
-  userName: string;
-  accessToken: string;
-  refreshToken: string;
-}
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
+import { setAllUsers } from "../redux/userReducer";
+import { ContactList } from "../util/types";
+import { setCurrentChatUser } from "../redux/chatReducer";
 
 const SideBar = () => {
-  const [userList, setUserList] = useState<UserListInterface[]>([]);
-  const [userInfo] = useLocalStorage<LoginInfoInterface>("userInfo", {
-    accessToken: "",
-    userName: "User",
-    refreshToken: "",
-  });
+  const userInfo = useAppSelector((state) => state.user.userInfo);
+  const contactList = useAppSelector((state) => state.user.allUsers);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const fetchAllUsers = async () => {
@@ -39,12 +27,10 @@ const SideBar = () => {
         }
 
         const data = await response.json();
-
+        dispatch(setAllUsers(data.data));
         if (!Array.isArray(data.data)) {
           throw new Error("Response is not an array");
         }
-
-        setUserList(data.data);
       } catch (error) {
         console.error("Error fetching users:", error);
       }
@@ -53,14 +39,28 @@ const SideBar = () => {
     fetchAllUsers();
   }, []);
 
+  const changeChatUserHandler = (user: ContactList) => {
+    dispatch(setCurrentChatUser(user.userName));
+  };
+
   return (
     <div className="flex flex-col">
       <div className="p-2 w-full min-w-[240px]">
         <input type="text" placeholder="Search" />
       </div>
-      <div>
-        {userList.map((user) => {
-          return <div>{user.userName}</div>;
+      <div className="p-2 ">
+        {contactList.map((user) => {
+          if (user.userName == userInfo.userName) {
+            return null;
+          }
+          return (
+            <div
+              key={user.userName}
+              onClick={() => changeChatUserHandler(user)}
+              className="text-yellow-100 hover:bg-slate-600 hover:cursor-pointer">
+              {user.userName}
+            </div>
+          );
         })}
       </div>
     </div>

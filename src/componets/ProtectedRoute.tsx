@@ -1,7 +1,7 @@
 // ProtectedRoute.tsx
 import React from "react";
 import { Navigate, RouteProps } from "react-router-dom";
-import useLocalStorage from "../hooks/useLocalStorage";
+import useLocalStorage from "../hooks/localStorage";
 
 interface LoginInfoInterface {
   email?: string;
