@@ -29,11 +29,11 @@ const userSlice = createSlice({
     setAllUsers: (state, action: PayloadAction<ContactList[]>) => {
       state.allUsers = action.payload;
     },
-    logoutUser: (state) => {
+    clearAllData: (state) => {
       state.allUsers = initialState.allUsers;
       state.userInfo = initialState.userInfo;
     },
   },
 });
-export const { setUserInfo, setAllUsers, logoutUser } = userSlice.actions;
+export const { setUserInfo, setAllUsers, clearAllData } = userSlice.actions;
 export default userSlice.reducer;

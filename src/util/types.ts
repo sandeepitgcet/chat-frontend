@@ -15,6 +15,12 @@ export interface SetUserInfoAction {
   payload: UserInfo;
 }
 
+export interface AuthInitialState {
+  accessToken: string | null;
+  refreshToken: string | null;
+  isAuthenticated: boolean;
+}
+
 export interface ContactList {
   firstName: string;
   lastName: string;

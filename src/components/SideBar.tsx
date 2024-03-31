@@ -5,6 +5,7 @@ import { ContactList } from "../util/types";
 import { setCurrentChatUser } from "../redux/chatReducer";
 
 const SideBar = () => {
+  const auth = useAppSelector((state) => state.auth);
   const userInfo = useAppSelector((state) => state.user.userInfo);
   const contactList = useAppSelector((state) => state.user.allUsers);
   const dispatch = useAppDispatch();
@@ -17,7 +18,7 @@ const SideBar = () => {
           {
             method: "GET",
             headers: new Headers({
-              Authorization: userInfo.refreshToken,
+              Authorization: auth.accessToken || "",
             }),
           }
         );
@@ -27,10 +28,8 @@ const SideBar = () => {
         }
 
         const data = await response.json();
+        console.log(data.data);
         dispatch(setAllUsers(data.data));
-        if (!Array.isArray(data.data)) {
-          throw new Error("Response is not an array");
-        }
       } catch (error) {
         console.error("Error fetching users:", error);
       }
@@ -43,6 +42,7 @@ const SideBar = () => {
     dispatch(setCurrentChatUser(user.userName));
   };
 
+  console.log("COntact list", contactList, userInfo);
   return (
     <div className="flex flex-col">
       <div className="p-2 w-full min-w-[240px]">

@@ -1,8 +1,8 @@
 // App.tsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./componets/Home";
-import Welcome from "./componets/Welcome";
-import ProtectedRoute from "./componets/ProtectedRoute";
+import Home from "./components/Home";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Dashboard from "./components/Dashboard";
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Welcome />
+              <Dashboard />
             </ProtectedRoute>
           }
         />

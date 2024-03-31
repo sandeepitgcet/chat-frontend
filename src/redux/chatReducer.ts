@@ -28,8 +28,12 @@ const chatSlice = createSlice({
     setCurrentChatUser: (state, action: PayloadAction<string | null>) => {
       state.currentChatUser = action.payload;
     },
+    clearAllChats: (state) => {
+      state.userChatMessages = {};
+      state.currentChatUser = null;
+    },
   },
 });
-export const { addMessage, clearMessages, setCurrentChatUser } =
+export const { addMessage, clearMessages, setCurrentChatUser, clearAllChats } =
   chatSlice.actions;
 export default chatSlice.reducer;

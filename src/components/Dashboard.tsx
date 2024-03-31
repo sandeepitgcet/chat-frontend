@@ -5,29 +5,25 @@ import { io, Socket } from "socket.io-client"; // Import Socket type
 import NavBar from "./NavBar";
 import SideBar from "./SideBar";
 import Chat from "./Chat";
-import { UserInfo } from "../util/types";
-import useLocalStorage from "../hooks/localStorage";
+import { useAppSelector } from "../hooks/reduxHook";
+import { addMessage } from "../redux/chatReducer";
 import { useDispatch } from "react-redux";
-import { setUserInfo } from "../redux/userReducer";
-const userInfoInit: UserInfo = {
-  userName: "",
-  firstName: "",
-  lastName: "",
-  email: "",
-  accessToken: "",
-  refreshToken: "",
-};
-const Welcome: React.FC = () => {
+
+const Dashboard: React.FC = () => {
   const socket: Socket = io(import.meta.env.VITE_SERVER_BASE_URL); // Define socket and specify its type
-  const [userInfo] = useLocalStorage<UserInfo>("userInfo", userInfoInit);
+  const userInfo = useAppSelector((state) => state.user.userInfo);
   const dispatch = useDispatch();
   useEffect(() => {
-    console.log("Welcome UseEffect !");
-    dispatch(setUserInfo(userInfo));
     socket.on("connect", () => {
       console.log("Connection established", socket.id);
       socket.emit("welcome", userInfo.userName);
     });
+
+    socket.on("receiveMessage", ({ message }) => {
+      console.log("Received message", message);
+      dispatch(addMessage({ userName: message.toUserName, message }));
+    });
+
     socket.on("disconnect", () => {
       console.log("Connection disconnected", socket.id);
     });
@@ -56,4 +52,4 @@ const Welcome: React.FC = () => {
   );
 };
 
-export default Welcome;
+export default Dashboard;

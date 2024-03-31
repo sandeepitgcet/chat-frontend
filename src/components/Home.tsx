@@ -1,54 +1,50 @@
 // src/pages/Home.tsx
 
 import React, { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import useLocalStorage from "../hooks/localStorage";
-import { useAppDispatch } from "../hooks/reduxHook";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
 import { setUserInfo } from "../redux/userReducer";
-interface LoginInfoInterface {
-  email?: string;
-  userName?: string;
-  accessToken?: string;
-  refreshToken?: string;
-}
+import { login } from "../redux/authReducer";
 const Home: React.FC = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [loginInput, setLoginInput] = useState({
     email: "sandeep@test.com",
     password: "sandeep123",
   });
 
-  const [loginInfo, setLoginInfo] = useLocalStorage<LoginInfoInterface>(
-    "userInfo",
-    {}
-  );
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" />;
+  }
 
   const loginHandler = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log("loginHandler", loginInput);
-    const response = await fetch("http://localhost:3000/api/auth/signin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(loginInput),
-    });
-    console.log("response", response);
-    const loginData = await response.json();
-    if (response.status) {
-      console.log("succeess loginData", loginData);
-      setLoginInfo(loginData.data.userInfo);
-      dispatch(setUserInfo(loginData.data.userInfo));
-      //navigate("/dashboard");
-    } else {
-      console.log(loginData, "loginFailed");
+    try {
+      const response = await fetch("http://localhost:3000/api/auth/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginInput),
+      });
+      const loginResponse = await response.json();
+
+      if (response.ok) {
+        const accessToken = loginResponse.data.userInfo.accessToken;
+        const refreshToken = loginResponse.data.userInfo.refreshToken;
+        dispatch(login({ accessToken, refreshToken }));
+        console.log(loginResponse);
+        dispatch(setUserInfo(loginResponse.data.userInfo));
+        navigate("/dashboard");
+      } else {
+        console.log(loginResponse, "loginFailed");
+      }
+    } catch (error: unknown) {
+      console.log(error);
     }
   };
-
-  if (loginInfo.userName && loginInfo.userName) {
-    navigate("/dashboard");
-  }
 
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -122,24 +118,24 @@ const Home: React.FC = () => {
               />
             </div>
             <div>
-              <label htmlFor="email" className="block mb-1">
+              <label htmlFor="signup-email" className="block mb-1">
                 Email:
               </label>
               <input
                 type="email"
-                id="email"
-                name="email"
+                id="signup-email"
+                name="signup-email"
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block mb-1">
+              <label htmlFor="signup-password" className="block mb-1">
                 Password:
               </label>
               <input
                 type="password"
-                id="password"
-                name="password"
+                id="signup-password"
+                name="signup-password"
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
             </div>

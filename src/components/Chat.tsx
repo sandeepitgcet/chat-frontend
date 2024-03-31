@@ -10,7 +10,11 @@ const Chat: React.FC<ChatProps> = ({ socket }) => {
   const [messageData, setMessageData] = useState("");
   const userInfo = useAppSelector((state) => state.user.userInfo);
   const dispatch = useAppDispatch();
-  console.log(chatMessages);
+
+  // useEffect(() => {
+
+  // }, [socket]);
+
   if (!toUserName) {
     return (
       <div>
@@ -18,19 +22,6 @@ const Chat: React.FC<ChatProps> = ({ socket }) => {
       </div>
     );
   }
-
-  socket.on("receiveMessage", ({ message }) => {
-    console.log("Received message", message);
-    // const message: ChatMessage = {
-    //   id: uuidv4(),
-    //   senderUserName: userInfo.userName,
-    //   toUserName: toUserName,
-    //   messageType: "text",
-    //   message: messageData,
-    //   timestamp: Date.now(), // Unix timestamp of when the message was sent
-    // };
-    dispatch(addMessage({ userName: toUserName, message }));
-  });
 
   const sendMessage = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();

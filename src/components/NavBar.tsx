@@ -1,14 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
-import { logoutUser } from "../redux/userReducer";
+import { logoutAndClearData } from "../redux/logotMiddleware";
 const NavBar = () => {
   const userInfo = useAppSelector((state) => state.user.userInfo);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const logoutHandler = async () => {
-    //setUserInfo({});  Not working reason not known yet, setUserInfo is function from useLocalStorage hook
-    localStorage.removeItem("userInfo");
-    dispatch(logoutUser());
+    dispatch(logoutAndClearData());
     navigate("/");
   };
   return (
